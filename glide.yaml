@@ -1,0 +1,4 @@
+package: inceptionServer
+import:
+- package: github.com/tensorflow/tensorflow/tensorflow/go 
+  version: r1.4
