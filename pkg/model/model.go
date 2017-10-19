@@ -72,7 +72,7 @@ func (m *TfModel) modelFiles(dir string) (string, string, error) {
 	labelfile := filepath.Join(dir, "imagenet_comp_graph_label_strings.txt")
 	zipfile := filepath.Join(dir, "inception5h.zip")
 
-	if filesExist(modelfile, labelfile) == nil {
+	if FilesExist(modelfile, labelfile) == nil {
 		return modelfile, labelfile, nil
 	}
 
@@ -88,7 +88,7 @@ func (m *TfModel) modelFiles(dir string) (string, string, error) {
 		return "", "", fmt.Errorf("failed to extract contents from model archive: %v", err)
 	}
 	os.Remove(zipfile)
-	return modelfile, labelfile, filesExist(modelfile, labelfile)
+	return modelfile, labelfile, FilesExist(modelfile, labelfile)
 }
 
 func loadLabels(fname string) ([]string, error) {

@@ -83,7 +83,7 @@ func timeTrack(start time.Time, name string) time.Duration{
 	return elapsed
 }
 
-func filesExist(files ...string) error {
+func FilesExist(files ...string) error {
 	for _, f := range files {
 		if _, err := os.Stat(f); err != nil {
 			return fmt.Errorf("unable to stat %s: %v", f, err)

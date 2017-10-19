@@ -105,6 +105,7 @@ func (s *InceptionServer) handleWelcome(w http.ResponseWriter, r *http.Request) 
 }
 
 func (s *InceptionServer) handlePredict(w http.ResponseWriter, r *http.Request) {
+	glog.V(4).Infof("Begin to handle predict request: %v", r.URL.Path)
 	begin := time.Now()
 	//1. get a random image
 	fname, err := s.imgDB.GetRandomImage()
@@ -135,14 +136,32 @@ func (s *InceptionServer) handlePredict(w http.ResponseWriter, r *http.Request) 
 	return
 }
 
-func (s *InceptionServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	path := r.URL.Path
-	if path == "/" || strings.HasPrefix(path, "/index") {
-		s.handleWelcome(w, r)
+func (s *InceptionServer) faviconHandler(w http.ResponseWriter, r *http.Request) {
+	fpath := "/tmp/favicon.jpg"
+	if err := tfmodel.FilesExist(fpath); err != nil {
+		glog.Warningf("favicon file[%v] does not exist.", fpath)
 		return
 	}
 
-	s.handlePredict(w, r)
+	http.ServeFile(w, r, fpath)
+	return
+}
+
+func (s *InceptionServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
+	glog.V(3).Infof("Begin to handle path: %v", path)
+
+	if strings.EqualFold(path, "/favicon.ico") {
+		s.faviconHandler(w, r)
+		return
+	}
+
+	if strings.HasPrefix(path, "/img/") {
+		s.handlePredict(w, r)
+		return
+	}
+
+	s.handleWelcome(w, r)
 	return
 }
 

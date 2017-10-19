@@ -8,6 +8,8 @@ COPY ./Makefile ${GOPATH}/src/inceptionServer/Makefile
 COPY ./vendor ${GOPATH}/src/inceptionServer/vendor
 
 COPY ./imgs /tmp/imgs/ 
+COPY ./scripts/favicon.jpg /tmp/favicon.jpg
+
 COPY ./model-data /tmp/model-data
 COPY ./scripts/container.run.sh /bin/container.run.sh
 RUN chmod +x /bin/container.run.sh
