@@ -24,7 +24,7 @@ Images can be found from [ImageNet](http://www.image-net.org).
 # Build it
 ### Pre Requirements
 * Golang
-   
+* Glide ([package management tool](https://github.com/Masterminds/glide))   
 * tensorflow for Golang
 
    According to the [instructions of Installing tensorflow for Go](https://www.tensorflow.org/install/install_go), [this script](https://github.com/songbinliu/tensorflowGo/blob/03fef59040a16ed47ce8b0d534985eba26d0d770/install-tensorflow.sh#L3) will do the job:
