@@ -14,9 +14,9 @@ RUN chmod +x /bin/container.run.sh
 
 #2. compile 
 WORKDIR ${GOPATH}/src/inceptionServer
-#RUN go get . && make
 RUN make
 RUN cp _output/inceptions /bin/inceptions
+VOLUME ["/tmp/imgs/"]
 
 #3. Run server
 EXPOSE 9527

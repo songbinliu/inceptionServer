@@ -2,7 +2,7 @@
 
 options="--v=2 --logtostderr"
 options="$options --modeldir=/tmp/model-data/inception/"
-options="$options --imgfile=/tmp/imgs/" 
+options="$options --imgdir=/tmp/imgs/" 
 
 bin=/bin/inceptions
 chmod +x $bin
