@@ -22,7 +22,26 @@ docker run -p 8080:9527 -v $myimgdir:/tmp/imgs/ -d beekman9527/inceptionserver
 Images can be found from [ImageNet](http://www.image-net.org).
 
 # Build it
-### Build local runnable binary (Mac OS X)
+### Pre Requirements
+* Golang
+   
+* tensorflow for Golang
+   According to the [instructions of Installing tensorflow for Go](), the following scripts will do the job:
+   ```bash
+   #1. get the clib
+   TF_TYPE="cpu" # Change to "gpu" for GPU support
+TARGET_DIRECTORY='/usr/local'
+curl -L \
+   "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-${TF_TYPE}-$(go env GOOS)-x86_64-1.3.0.tar.gz" |
+tar -C $TARGET_DIRECTORY -xz
+
+#2. setup clib (not necessary for Mac OS X)
+ldconfig
+
+   ```
+
+
+### Build local runnable binary
 
 With the following commands, a executable binary will be built in `inceptionServer/_output/inceptions`.
 ```bash
