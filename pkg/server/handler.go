@@ -6,9 +6,10 @@ import (
 	"github.com/golang/glog"
 	"bytes"
 	"fmt"
-	"os"
 	"time"
 	"path/filepath"
+	"net/http"
+	"strings"
 )
 
 
@@ -20,7 +21,14 @@ var (
 	`
 
 	htmlFootTemplate string = `
-	<hr width="50%">host:  {{.HostName}}</center></body></html>
+	<hr width="50%">hostName:  {{.HostName}}
+	<br/>
+	hostIP: {{.HostIP}}
+	<br/>
+	ClientIP: {{.ClientIP}}
+	<br/>
+	OriginalClient: {{.OriginalClient}}
+	</center></body></html>
 	`
 
 	tableImgTemplate string = `
@@ -65,28 +73,6 @@ func getHead(title string, head string) (string, error) {
 	return result.String(), nil
 }
 
-func getFoot(begin time.Time) (string, error) {
-	tmp, err := template.New("foot").Parse(htmlFootTemplate)
-	if err != nil {
-		glog.Errorf("Failed to parse image template %v:%v", imageTemplate, err)
-		return "", fmt.Errorf("parse failed")
-	}
-
-	var result bytes.Buffer
-	hname, err := os.Hostname()
-	if err != nil {
-		hname = "unknown"
-	}
-
-	data := map[string]interface{}{"HostName": hname}
-	if err := tmp.Execute(&result, data); err != nil {
-		glog.Errorf("Faile to execute template: %v", err)
-		return "", fmt.Errorf("execute failed.")
-	}
-
-	return result.String(), nil
-}
-
 func getImgTable(fpath string, img []byte) string {
 	str := base64.StdEncoding.EncodeToString(img)
 	tmp, err := template.New("image").Parse(tableImgTemplate)
@@ -106,16 +92,26 @@ func getImgTable(fpath string, img []byte) string {
 	return table.String()
 }
 
-func GetImgHtml(fname string, img []byte, predict string, begin time.Time) string {
+func getClientIP(r *http.Request) string {
+	return r.RemoteAddr
+}
+
+func getOriginalClientInfo(r *http.Request) string {
+	orig := r.Header.Get("X-Forwarded-For")
+	glog.V(2).Infof("request from %v, %v", r.RemoteAddr, orig)
+
+	if len(orig) > 0 {
+		ips := strings.Split(orig, ", ")
+		return ips[0]
+	}
+
+	return ""
+}
+
+func GetImgHtml(fname string, img []byte, predict, foot string, begin time.Time) string {
 	head, err := getHead("ShowImage", "Image details")
 	if err != nil {
 		glog.Errorf("Failed to get head: %v", err)
-		return ""
-	}
-
-	foot, err := getFoot(begin)
-	if err != nil {
-		glog.Errorf("Failed to get foot: %v", err)
 		return ""
 	}
 

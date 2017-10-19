@@ -5,23 +5,46 @@ import (
 	"io"
 	"time"
 	"net/http"
+	"html/template"
 	"github.com/golang/glog"
 
 	"inceptionServer/pkg/util"
 	tfmodel "inceptionServer/pkg/model"
+	"bytes"
+	"os"
 )
 
 
 type InceptionServer struct {
 	port int
+	ip string
+	host string
 
 	model *tfmodel.TfModel
 	imgDB *tfmodel.ImageDB
+
 }
 
 func NewInceptionServer(port int, m *tfmodel.TfModel) *InceptionServer {
+	ip, err := util.ExternalIP()
+	if err != nil {
+		glog.Errorf("Failed to get server IP: %v", err)
+		ip = "localhost"
+	}
+
+	host, err := os.Hostname()
+	if err != nil {
+		glog.Errorf("Failed to get hostname: %v", err)
+		host = "localhost"
+	}
+	glog.V(2).Infof("Will server on %s:%d", ip, port)
+
+
+
 	return &InceptionServer{
 		port: port,
+		ip: ip,
+		host: host,
 		model: m,
 	}
 }
@@ -88,7 +111,32 @@ func (s *InceptionServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//4. generate html
+	foot := s.genPageFoot(r)
 	util.TimeTrack(begin, "Predict")
-	io.WriteString(w, GetImgHtml(fname, bytes, htmlTable, begin))
+	io.WriteString(w, GetImgHtml(fname, bytes, htmlTable, foot, begin))
 	return
+}
+
+func (s *InceptionServer) genPageFoot (r *http.Request) string {
+	tmp, err := template.New("foot").Parse(htmlFootTemplate)
+	if err != nil {
+		glog.Errorf("Failed to parse image template %v:%v", imageTemplate, err)
+		return ""
+	}
+
+	var result bytes.Buffer
+
+	data := make(map[string]interface{})
+	data["HostName"] = s.host
+	data["HostIP"] = s.ip
+	data["ClientIP"] = getClientIP(r)
+	data["OriginalClient"] = getOriginalClientInfo(r)
+
+	if err := tmp.Execute(&result, data); err != nil {
+		glog.Errorf("Faile to execute template: %v", err)
+		return ""
+	}
+
+	return result.String()
 }
