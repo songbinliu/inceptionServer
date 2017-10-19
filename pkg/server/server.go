@@ -130,7 +130,7 @@ func (s *InceptionServer) handlePredict(w http.ResponseWriter, r *http.Request) 
 
 	//4. generate html
 	foot := s.genPageFoot(r)
-	util.TimeTrack(begin, "Predict")
+	//util.TimeTrack(begin, "Predict")
 	io.WriteString(w, GetImgHtml(fname, bytes, htmlTable, foot, begin))
 	return
 }
