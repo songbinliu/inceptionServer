@@ -26,19 +26,9 @@ Images can be found from [ImageNet](http://www.image-net.org).
 * Golang
    
 * tensorflow for Golang
-   According to the [instructions of Installing tensorflow for Go](), the following scripts will do the job:
-   ```bash
-   #1. get the clib
-   TF_TYPE="cpu" # Change to "gpu" for GPU support
-TARGET_DIRECTORY='/usr/local'
-curl -L \
-   "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-${TF_TYPE}-$(go env GOOS)-x86_64-1.3.0.tar.gz" |
-tar -C $TARGET_DIRECTORY -xz
 
-#2. setup clib (not necessary for Mac OS X)
-ldconfig
-
-   ```
+   According to the [instructions of Installing tensorflow for Go](https://www.tensorflow.org/install/install_go), [this script](https://github.com/songbinliu/tensorflowGo/blob/03fef59040a16ed47ce8b0d534985eba26d0d770/install-tensorflow.sh#L3) will do the job:
+   
 
 
 ### Build local runnable binary
