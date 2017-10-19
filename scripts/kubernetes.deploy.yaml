@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: inception-be
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: "inception-be-pods"
+        purpose: "resource-test"
+    spec:
+      containers:
+      - name: "inception-server"
+        image: beekman9527/inceptionserver:latest
+        resources:
+          limits:
+            cpu: "300m"
+          requests:
+            cpu: "200m"
+        ports: 
+        - containerPort: 9527
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: inception-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: inception-be-pods
+  ports:
+    - name: 80-tcp
+      protocol: TCP
+      port: 80
+      targetPort: 9527
