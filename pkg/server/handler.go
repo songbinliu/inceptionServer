@@ -98,7 +98,7 @@ func getClientIP(r *http.Request) string {
 
 func getOriginalClientInfo(r *http.Request) string {
 	orig := r.Header.Get("X-Forwarded-For")
-	glog.V(2).Infof("request from %v, %v", r.RemoteAddr, orig)
+	glog.V(3).Infof("request from %v, %v", r.RemoteAddr, orig)
 
 	if len(orig) > 0 {
 		ips := strings.Split(orig, ", ")

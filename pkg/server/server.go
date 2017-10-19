@@ -12,6 +12,7 @@ import (
 	tfmodel "inceptionServer/pkg/model"
 	"bytes"
 	"os"
+	"strings"
 )
 
 
@@ -84,11 +85,27 @@ func (s *InceptionServer) doPredict(fname string) (string, error) {
 	return result.GenTableString(), nil
 }
 
-func (s *InceptionServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	//io.WriteString(w, "hello world!")
-	//io.WriteString(w, GetSimpleHtml())
-	begin := time.Now()
+// handle pages "/", "/index.html", "index.htm"
+func (s *InceptionServer) handleWelcome(w http.ResponseWriter, r *http.Request) {
+	head, err := getHead("Welcome", "Introduction")
+	if err != nil {
+		glog.Errorf("Failed to handle welcome page.")
+		io.WriteString(w, "Internal Error")
+		return
+	}
 
+	body := `This is a web server, which can assign labels to images using tensorflow inception model. <br/>
+	<a href="/img/random">Try it.</a>
+	It will show a random image, and its labels.`
+
+	foot := s.genPageFoot(r)
+
+	io.WriteString(w, head + body + foot)
+	return
+}
+
+func (s *InceptionServer) handlePredict(w http.ResponseWriter, r *http.Request) {
+	begin := time.Now()
 	//1. get a random image
 	fname, err := s.imgDB.GetRandomImage()
 	if err != nil {
@@ -115,6 +132,17 @@ func (s *InceptionServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	foot := s.genPageFoot(r)
 	util.TimeTrack(begin, "Predict")
 	io.WriteString(w, GetImgHtml(fname, bytes, htmlTable, foot, begin))
+	return
+}
+
+func (s *InceptionServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
+	if path == "/" || strings.HasPrefix(path, "/index") {
+		s.handleWelcome(w, r)
+		return
+	}
+
+	s.handlePredict(w, r)
 	return
 }
 
