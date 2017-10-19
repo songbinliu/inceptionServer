@@ -9,7 +9,7 @@ COPY ./vendor ${GOPATH}/src/inceptionServer/vendor
 
 COPY ./imgs /tmp/imgs/ 
 COPY ./model-data /tmp/model-data
-COPY ./container.run.sh /bin/container.run.sh
+COPY ./scripts/container.run.sh /bin/container.run.sh
 RUN chmod +x /bin/container.run.sh
 
 #2. compile 

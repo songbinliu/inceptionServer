@@ -1,0 +1,11 @@
+hash: 5e24b0d71d74f1eb908611606e53a445458742f6a2dde0b601574a329a6c7414
+updated: 2017-10-19T10:16:09.584871359-04:00
+imports:
+- name: github.com/golang/glog
+  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
+- name: github.com/tensorflow/tensorflow
+  version: adc9c077c02a70c7a759de7a7230dc3dbcccbac4
+  subpackages:
+  - tensorflow/go
+  - tensorflow/go/op
+testImports: []
