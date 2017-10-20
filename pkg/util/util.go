@@ -5,7 +5,48 @@ import (
 	"net"
 	"github.com/golang/glog"
 	"fmt"
+	"net/http"
+	"github.com/prometheus/client_golang/prometheus"
 )
+
+type ServerMetrics struct {
+	handler http.Handler
+	prediction_resp *prometheus.HistogramVec
+	http_resp *prometheus.HistogramVec
+}
+
+func NewMetrics() *ServerMetrics {
+	predict := prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name: "predict_millseconds",
+		Help: "Time taken to predict labels for image",
+	}, []string{"code"})
+
+	http := prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name: "page_resp_millseconds",
+		Help: "Overall time taken to predict the image and print the image",
+	}, []string{"code"})
+
+	prometheus.Register(predict)
+	prometheus.Register(http)
+
+	return &ServerMetrics{
+		prediction_resp: predict,
+		http_resp: http,
+		handler: prometheus.Handler(),
+	}
+}
+
+func (m *ServerMetrics) AddPrediction(code int, du time.Duration) {
+	m.prediction_resp.WithLabelValues(fmt.Sprintf("%d", code)).Observe(du.Seconds()*1000.0)
+}
+
+func (m *ServerMetrics) AddHttp(code int, du time.Duration) {
+	m.http_resp.WithLabelValues(fmt.Sprintf("%d", code)).Observe(du.Seconds()*1000.0)
+}
+
+func (m *ServerMetrics) Handle(w http.ResponseWriter, r *http.Request) {
+	m.handler.ServeHTTP(w, r)
+}
 
 func TimeTrack(start time.Time, name string) time.Duration{
 	elapsed := time.Since(start)

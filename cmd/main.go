@@ -9,10 +9,11 @@ import (
 	"path/filepath"
 	"io/ioutil"
 	"strings"
+	"runtime"
 
 	tfmodel "inceptionServer/pkg/model"
 	iserver "inceptionServer/pkg/server"
-	"runtime"
+
 )
 
 var (
@@ -104,6 +105,7 @@ func testFile(imgfile string, model *tfmodel.TfModel) {
 
 	fmt.Println(result.String())
 }
+
 
 func main() {
 	if err := setFlags(); err != nil {

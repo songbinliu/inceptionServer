@@ -20,10 +20,10 @@ type InceptionServer struct {
 	port int
 	ip string
 	host string
+	metrics *util.ServerMetrics
 
 	model *tfmodel.TfModel
 	imgDB *tfmodel.ImageDB
-
 }
 
 func NewInceptionServer(port int, m *tfmodel.TfModel) *InceptionServer {
@@ -41,11 +41,11 @@ func NewInceptionServer(port int, m *tfmodel.TfModel) *InceptionServer {
 	glog.V(2).Infof("Will server on %s:%d", ip, port)
 
 
-
 	return &InceptionServer{
 		port: port,
 		ip: ip,
 		host: host,
+		metrics: util.NewMetrics(),
 		model: m,
 	}
 }
@@ -132,7 +132,9 @@ func (s *InceptionServer) handlePredict(w http.ResponseWriter, r *http.Request) 
 	//4. generate html
 	foot := s.genPageFoot(r)
 	//util.TimeTrack(begin, "Predict")
+	s.metrics.AddPrediction(200, time.Since(begin))
 	io.WriteString(w, GetImgHtml(fname, bytes, htmlTable, foot, begin))
+	s.metrics.AddHttp(200, time.Since(begin))
 	return
 }
 
@@ -161,6 +163,10 @@ func (s *InceptionServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if strings.EqualFold(path, "/metrics") {
+		s.handleMetrics(w, r)
+	}
+
 	s.handleWelcome(w, r)
 	return
 }
@@ -186,4 +192,8 @@ func (s *InceptionServer) genPageFoot (r *http.Request) string {
 	}
 
 	return result.String()
+}
+
+func (s *InceptionServer) handleMetrics(w http.ResponseWriter, r *http.Request) {
+	s.metrics.Handle(w, r)
 }
