@@ -1,0 +1,22 @@
+FROM beekman9527/tensorflowlib
+
+RUN ls /usr/local/lib/*tensorflow*
+RUN ldconfig
+
+#1. copy the binary and conf files
+COPY ./_output/inceptions.linux /bin/inceptions
+COPY ./scripts/container.run.sh /bin/container.run.sh
+RUN chmod +x /bin/container.run.sh
+RUN chmod +x /bin/inceptions
+
+#2. copy conf files
+COPY ./imgs /tmp/imgs/
+COPY ./model-data /tmp/model-data
+VOLUME ["/tmp/imgs/"]
+
+EXPOSE 9527
+
+#WORKDIR /tmp
+ENTRYPOINT ["/bin/container.run.sh"]
+
+ 
