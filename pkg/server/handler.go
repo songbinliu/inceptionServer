@@ -15,7 +15,9 @@ import (
 
 var (
 	htmlHeadTemplate string = `
-	<html><head><title>{{.PageTitle}}</title></head><boday><center>
+	<html><head><title>{{.PageTitle}}</title>
+	<link rel="icon" type="image/jpg" href="data:;base64,iVBORw0KGgo">
+	</head><boday><center>
 	<h1>{{.PageHead}}</h1>
 	<hr width="50%">
 	`
