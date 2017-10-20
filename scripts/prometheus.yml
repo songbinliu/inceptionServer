@@ -11,6 +11,7 @@ global:
 
 scrape_configs:
   - job_name: 'img-service'
+    # resp_time = rate(predict_millseconds_sum[5m]) / rate(predict_millseconds_count[5m]) 
     metrics_path: /metrics
     static_configs:
       - targets: ['10.10.200.105:9527']
