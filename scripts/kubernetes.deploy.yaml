@@ -13,7 +13,7 @@ spec:
       containers:
       - name: "inception-server"
         image: beekman9527/inceptionserver:latest
-		args:
+        args:
         - --v=3
         - --imgdir=/tmp/imgs/ 
         resources:
