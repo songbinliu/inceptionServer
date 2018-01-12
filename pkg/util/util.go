@@ -90,3 +90,18 @@ func ExternalIP() (string, error) {
 	}
 	return "", fmt.Errorf("are you connected to the network?")
 }
+
+func StringToInt(path string) int {
+	if len(path) < 1 {
+		return 0
+	}
+
+	bbuf := []byte(path)
+
+	result := 0
+	for i := 0; i < len(bbuf); i ++ {
+		result += int(bbuf[i])
+	}
+
+	return result
+}

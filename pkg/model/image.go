@@ -86,6 +86,19 @@ func (db *ImageDB) GetRawImage(fname string) ([]byte, error) {
 	return bytes, nil
 }
 
+func (db *ImageDB) GetImage(idx int) (string, error) {
+	if db.Size() < 1 {
+		glog.Errorf("ImageDB is empty.")
+		return "", fmt.Errorf("Empty.")
+	}
+
+	id := idx % db.Size()
+	if id < 0 {
+		id = 0
+	}
+	return db.index[int(id)], nil
+}
+
 func (db *ImageDB) GetRandomImage() (string, error) {
 	if db.Size() < 1 {
 		glog.Errorf("ImageDB is empty.")
