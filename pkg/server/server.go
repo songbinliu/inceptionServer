@@ -20,10 +20,10 @@ type InceptionServer struct {
 	port int
 	ip string
 	host string
+	metrics *util.ServerMetrics
 
 	model *tfmodel.TfModel
 	imgDB *tfmodel.ImageDB
-
 }
 
 func NewInceptionServer(port int, m *tfmodel.TfModel) *InceptionServer {
@@ -41,11 +41,11 @@ func NewInceptionServer(port int, m *tfmodel.TfModel) *InceptionServer {
 	glog.V(2).Infof("Will server on %s:%d", ip, port)
 
 
-
 	return &InceptionServer{
 		port: port,
 		ip: ip,
 		host: host,
+		metrics: util.NewMetrics(),
 		model: m,
 	}
 }
@@ -104,7 +104,49 @@ func (s *InceptionServer) handleWelcome(w http.ResponseWriter, r *http.Request) 
 	return
 }
 
-func (s *InceptionServer) handlePredict(w http.ResponseWriter, r *http.Request) {
+// select a image by the requesting path
+func (s *InceptionServer) handlePredictPath(w http.ResponseWriter, r *http.Request) {
+	glog.V(4).Infof("Begin to handle predict request: %v", r.URL.Path)
+	begin := time.Now()
+
+	idx := util.StringToInt(r.URL.Path)
+	glog.V(3).Infof("generate index(%d) for path: %v", idx, r.URL.Path)
+
+	fname, err := s.imgDB.GetImage(idx)
+	if err != nil {
+		glog.Errorf("Failed to get an image: %v", err)
+		io.WriteString(w, "Internal Error")
+		return
+	}
+
+	s.handlePredict(w, r, fname, begin)
+}
+
+func (s *InceptionServer) handlePredict(w http.ResponseWriter, r *http.Request, fname string, begin time.Time) {
+	//1. predict the labels for the image
+	htmlTable, err := s.doPredict(fname)
+	if err != nil {
+		io.WriteString(w, "Internal Error")
+		return
+	}
+
+	//2. write result
+	rawImg, err := s.imgDB.GetRawImage(fname)
+	if err != nil {
+		io.WriteString(w, "Internal Error")
+		return
+	}
+
+	//3. generate html
+	foot := s.genPageFoot(r)
+	//util.TimeTrack(begin, "Predict")
+	s.metrics.AddPrediction(200, time.Since(begin))
+	io.WriteString(w, GetImgHtml(fname, rawImg, htmlTable, foot, begin))
+	s.metrics.AddHttp(200, time.Since(begin))
+}
+
+// Randomly select a image, and do the prediction
+func (s *InceptionServer) handlePredictRandom(w http.ResponseWriter, r *http.Request) {
 	glog.V(4).Infof("Begin to handle predict request: %v", r.URL.Path)
 	begin := time.Now()
 	//1. get a random image
@@ -115,24 +157,7 @@ func (s *InceptionServer) handlePredict(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	//2. predict the labels for the image
-	htmlTable, err := s.doPredict(fname)
-	if err != nil {
-		io.WriteString(w, "Internal Error")
-		return
-	}
-
-	//3. write result
-	bytes, err := s.imgDB.GetRawImage(fname)
-	if err != nil {
-		io.WriteString(w, "Internal Error")
-		return
-	}
-
-	//4. generate html
-	foot := s.genPageFoot(r)
-	//util.TimeTrack(begin, "Predict")
-	io.WriteString(w, GetImgHtml(fname, bytes, htmlTable, foot, begin))
+	s.handlePredict(w, r, fname, begin)
 	return
 }
 
@@ -156,9 +181,18 @@ func (s *InceptionServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if strings.HasPrefix(path, "/img/") {
-		s.handlePredict(w, r)
+	if strings.HasPrefix(path, "/img/random") {
+		s.handlePredictRandom(w, r)
 		return
+	}
+
+	if strings.HasPrefix(path, "/img/") {
+		s.handlePredictPath(w, r)
+		return
+	}
+
+	if strings.EqualFold(path, "/metrics") {
+		s.handleMetrics(w, r)
 	}
 
 	s.handleWelcome(w, r)
@@ -186,4 +220,8 @@ func (s *InceptionServer) genPageFoot (r *http.Request) string {
 	}
 
 	return result.String()
+}
+
+func (s *InceptionServer) handleMetrics(w http.ResponseWriter, r *http.Request) {
+	s.metrics.Handle(w, r)
 }

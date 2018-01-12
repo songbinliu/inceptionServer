@@ -51,3 +51,7 @@ A web server will be listening on port 9527. Access it via http://localhost:9527
 ```bash
 sh scripts/build_img.sh
 ```
+  or build a container image contains only tensorflow runtime lib and the binary file of this server
+  ```bash
+sh scripts/build_img_lit.sh
+```
