@@ -12,14 +12,13 @@ spec:
     spec:
       containers:
       - name: "inception-server"
-        #image: beekman9527/inceptionserver:latest
-        image: beekman9527/inceptionserver:lit
+      - image: beekman9527/inceptionserver:lit
         args:
         - --v=3
         - --imgdir=/tmp/imgs/ 
         resources:
           limits:
-            cpu: "300m"
+            cpu: "500m"
           requests:
             cpu: "200m"
         ports: 
