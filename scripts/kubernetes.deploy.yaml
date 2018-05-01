@@ -33,7 +33,7 @@ spec:
   selector:
     app: inception-be-pods
   ports:
-    - name: 80-tcp
+    - name: http
       protocol: TCP
       port: 80
       targetPort: 9527
